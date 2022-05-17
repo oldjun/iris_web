@@ -1,0 +1,26 @@
+<div class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+        <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+        <ul class="layui-nav layui-nav-tree">
+            {% for menu_module in menu_module_list %}
+            <li class="layui-nav-item {% if menu_module.Active %}layui-nav-itemed{% endif %}">
+                <a href="javascript:void(0);">{{ menu_module.Name }}</a>
+                <dl class="layui-nav-child">
+                    {% for menu_action in menu_module.MenuActionList %}
+                    <dd {% if menu_action.Active %}class="layui-this"{% endif %}><a href="{{ menu_action.Action }}">{{ menu_action.Name }}</a></dd>
+                    {% endfor %}
+                </dl>
+            </li>
+            {% endfor %}
+
+<!--            <li class="layui-nav-item layui-nav-itemed">-->
+<!--                <a href="javascript:void(0);">权限测试</a>-->
+<!--                <dl class="layui-nav-child">-->
+<!--                    {% for k, v in rules %}-->
+<!--                    <dd><a href="#">{{ k }}-{{ v }}</a></dd>-->
+<!--                    {% endfor %}-->
+<!--                </dl>-->
+<!--            </li>-->
+        </ul>
+    </div>
+</div>

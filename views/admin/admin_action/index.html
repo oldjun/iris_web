@@ -1,0 +1,133 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}权限列表{% endblock %}
+
+{% block main %}
+<fieldset class="layui-elem-field layui-field-title">
+    <legend>权限列表</legend>
+</fieldset>
+<form class="layui-form">
+    <div class="layui-inline">
+        <select name="mid" id="mid">
+            <option value="">全部分类</option>
+            {% for module in module_list  %}
+            <option value="{{ module.Id }}">{{ module.Name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="layui-inline">
+        <select name="menu" id="menu">
+            <option value="">是否菜单</option>
+            <option value="0">否</option>
+            <option value="1">是</option>
+        </select>
+    </div>
+    <button class="layui-btn" data-type="reload">搜索</button>
+    <button class="layui-btn" id="add"><i class="layui-icon"></i>添加权限</button>
+</form>
+<table class="layui-hide" id="LAY_table" lay-filter="table"></table>
+{% endblock %}
+
+{% block script %}
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit"><i class="layui-icon layui-icon-edit"></i>修改</a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete"><i class="layui-icon layui-icon-delete"></i>删除</a>
+</script>
+<script>
+    layui.use(['layer', 'table'], function() {
+        var layer = layui.layer;
+        var table = layui.table;
+
+        window.table = table;
+
+        //方法级渲染
+        table.render({
+            elem: '#LAY_table'
+            ,url: '/admin-action/list'
+            ,response: {
+                statusName: 'code' //数据状态的字段名称，默认：code
+                ,statusCode: 0 //成功的状态码，默认：0
+                ,msgName: 'data' //状态信息的字段名称，默认：msg
+                ,countName: 'total' //数据总数的字段名称，默认：count
+                ,dataName: 'list' //数据列表的字段名称，默认：data
+            }
+            ,cols: [[
+                {field: 'id', title: 'ID', align: 'center', width: 100}
+                ,{field: 'module', title: '分类', align: 'center'}
+                ,{field: 'name', title: '名称', align: 'center'}
+                ,{field: 'menu', title: '菜单', align: 'center'}
+                ,{field: 'action', title: '方法', align: 'center'}
+                ,{field: 'time', title: '创建时间', align: 'center', width: 160}
+                ,{field: 'right', title: '操作', align: 'center', width: 160, toolbar: '#barDemo'}
+            ]]
+            ,id: 'tableReload'
+            ,page: true
+            ,limit: 100
+            ,limits: [100,200,300,400,500]
+        });
+
+        var $ = layui.$, active = {
+            reload: function(){
+                //执行重载
+                table.reload('tableReload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    ,where: {
+                        mid: $('#mid').val(),
+                        menu: $('#menu').val()
+                    }
+                });
+            }
+        };
+
+        //监听工具条
+        table.on('tool(table)', function(obj){
+            if (obj.event === 'delete') {
+                layer.confirm('真的删除么？', function(index){
+                    var id = obj.data.id;
+                    $.ajax({
+                        url: '/admin-action/delete',
+                        data: {id:id},
+                        type: 'get',
+                        dataType: 'json',
+                        success: function(resp) {
+                            if (!resp.code) {
+                                layer.msg(resp.data);
+                                obj.del();
+                                layer.close(index);
+                            } else {
+                                layer.alert(resp.data, {icon: 2});
+                            }
+                        }
+                    })
+                });
+            } else if (obj.event === 'edit') {
+                var id = obj.data.id;
+                layer.open({
+                    type: 2,
+                    title: '修改权限',
+                    area: ['450px', '350px'],
+                    content: '/admin-action/edit?iframe=1&id=' + id
+                });
+            }
+        });
+
+        $('#add').click(function(){
+            layer.open({
+                type: 2,
+                title: '添加权限',
+                area: ['450px', '350px'],
+                content: '/admin-action/add?iframe=1'
+            });
+            return false;
+        });
+
+        $('form .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+            return false;
+        });
+    });
+</script>
+{% endblock %}

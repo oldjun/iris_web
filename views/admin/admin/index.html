@@ -1,0 +1,162 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}员工列表{% endblock %}
+
+{% block main %}
+<fieldset class="layui-elem-field layui-field-title">
+    <legend>员工列表</legend>
+</fieldset>
+<form class="layui-form">
+    <div class="layui-inline">
+        <input class="layui-input" name="username" id="username" autocomplete="off" placeholder="用户名">
+    </div>
+    <div class="layui-inline">
+        <input class="layui-input" name="phone" id="phone" autocomplete="off" placeholder="手机号">
+    </div>
+    <div class="layui-inline">
+        <select name="role" id="role">
+            <option value="">角色分类</option>
+            {% for role in role_list %}
+            <option value="{{ role.Id }}">{{ role.Name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button class="layui-btn" data-type="reload">搜索</button>
+    <a class="layui-btn" id="add"><i class="layui-icon"></i>添加员工</a>
+</form>
+<table class="layui-hide" id="LAY_table" lay-filter="table"></table>
+{% endblock %}
+
+{% block script %}
+
+{% verbatim %}
+<script type="text/html" id="lockTpl">
+    <input type="checkbox" name="lock" value="{{d.id}}" lay-skin="switch" lay-text="是|否" lay-filter="lock" {{ d.lock == 1 ? 'checked' : '' }}>
+</script>
+{% endverbatim %}
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i>修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete"><i class="layui-icon layui-icon-delete"></i>删除</a>
+</script>
+
+<script>
+    layui.use(['form', 'layer', 'table'], function() {
+        var form = layui.form;
+        var layer = layui.layer;
+        var table = layui.table;
+
+        window.table = table;
+
+        //方法级渲染
+        table.render({
+            elem: '#LAY_table'
+            ,url: '/admin/list'
+            ,response: {
+                statusName: 'code' //数据状态的字段名称，默认：code
+                ,statusCode: 0 //成功的状态码，默认：0
+                ,msgName: 'data' //状态信息的字段名称，默认：msg
+                ,countName: 'total' //数据总数的字段名称，默认：count
+                ,dataName: 'list' //数据列表的字段名称，默认：data
+            }
+            ,cols: [[
+                {field: 'id', title: 'ID', align: 'center', width: 100}
+                ,{field: 'username', title: '用户名', align: 'center'}
+                ,{field: 'phone', title: '手机号', align: 'center'}
+                ,{field: 'role', title: '角色名称', align: 'center'}
+                ,{field: 'lock', title: '锁定', templet: '#lockTpl', align: 'center', width: 160}
+                ,{field: 'time', title: '创建时间', align: 'center', width: 160}
+                ,{field: 'right', title: '操作', align: 'center', width: 160, toolbar: '#barDemo'}
+            ]]
+            ,id: 'tableReload'
+            ,page: true
+            ,limit: 100
+            ,limits: [100]
+        });
+
+        var $ = layui.$, active = {
+            reload: function(){
+                //执行重载
+                table.reload('tableReload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    ,where: {
+                        username: $('#username').val(),
+                        phone: $('#phone').val(),
+                        role: $('#role').val()
+                    }
+                });
+            }
+        };
+
+        //监听工具条
+        table.on('tool(table)', function(obj){
+            if (obj.event === 'edit') {
+                var id = obj.data.id;
+                layer.open({
+                    type: 2,
+                    title: '修改员工',
+                    area: ['500px', '400px'],
+                    content: "/admin/edit?iframe=1&id=" + id
+                });
+                return false;
+            } else if (obj.event === 'delete') {
+                layer.confirm('真的删除么？', function(index){
+                    var id = obj.data.id;
+                    $.ajax({
+                        url: '/admin/delete',
+                        data: {id:id},
+                        type: 'get',
+                        dataType: 'json',
+                        success: function(resp) {
+                            if (!resp.code) {
+                                layer.msg(resp.data);
+                                obj.del();
+                                layer.close(index);
+                            } else {
+                                layer.alert(resp.data, {icon: 2});
+                            }
+                        }
+                    })
+                });
+            }
+        });
+
+        //监听锁定操作
+        form.on('switch(lock)', function(obj){
+            var id = this.value;
+            var lock = obj.elem.checked ? 1 : 0;
+            $.ajax({
+                url: '/admin/lock',
+                data: {id:id, lock:lock},
+                type: 'get',
+                dataType: 'json',
+                success: function(resp) {
+                    if (!resp.code) {
+                        layer.msg(resp.data);
+                    } else {
+                        layer.alert(resp.data, {icon: 2});
+                    }
+                }
+            });
+        });
+
+        $('#add').click(function(){
+            layer.open({
+                type: 2,
+                title: '添加员工',
+                area: ['500px', '400px'],
+                content: "/admin/add?iframe=1"
+            });
+            return false;
+        });
+
+        $('form button.layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+            return false;
+        });
+    });
+</script>
+{% endblock %}

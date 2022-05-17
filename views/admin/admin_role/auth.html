@@ -1,0 +1,71 @@
+{% extends 'admin/popbox.html' %}
+
+{% block main %}
+<form class="layui-form">
+    <input type="hidden" name="id" value="{{ id }}">
+    {% for module in module_list %}
+    <div class="layui-form-item">
+        <label class="layui-form-label">{{ module.name }}</label>
+        <div class="layui-input-block">
+            <input type="checkbox" lay-skin="primary" title="全选" lay-filter="checkbox-all" {% if module.checked_all %} checked {% endif %}>
+            {% for action in module.actions %}
+            <input type="checkbox" name="actions" value="{{ action.id }}" lay-skin="primary" title="{{ action.name }}" {% if action.checked %} checked {% endif %}>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn" lay-submit="" lay-filter="submit">提交</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block script %}
+<script>
+    layui.use(['form', 'layer'], function(){
+        var form = layui.form;
+        var layer = layui.layer;
+
+        //监听提交
+        form.on('submit(submit)', function(data){
+            var id = $('form input[name=id]').val()
+            var actions = [];
+            $('form input[name=actions]:checked').each(function (index, item) {
+                actions.push($(this).val());
+            });
+
+            $.ajax({
+                url: '/admin-role/auth',
+                data: {id:id,actions:actions},
+                type: 'post',
+                dataType: 'json',
+                success: function(resp) {
+                    if (!resp.code) {
+                        layer.msg(resp.data);
+                        setTimeout(function(){
+                            window.parent.table.reload('tableReload');
+                            parent.layer.closeAll();  // 关闭layer
+                        }, 1000);
+                    } else {
+                        layer.alert(resp.data, {icon: 2});
+                    }
+                }
+            });
+            return false;
+        });
+
+        form.on('checkbox(checkbox-all)', function (){
+            if ($(this).attr('checked')) {
+                $(this).closest('.layui-input-block').find('input[type="checkbox"]').attr('checked', false);
+                $(this).attr('checked', false);
+            } else {
+                $(this).closest('.layui-input-block').find('input[type="checkbox"]').attr('checked', true);
+                $(this).attr('checked', true);
+            }
+            form.render('checkbox');
+        });
+    });
+</script>
+{% endblock %}

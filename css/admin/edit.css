@@ -1,0 +1,92 @@
+.layui-upload-img {
+    width: 100px;
+    margin: 0;
+}
+.w-e-toolbar {
+    border: 1px solid #ccc;
+    border-bottom: 0;
+}
+#text {
+    border: 1px solid #ccc;
+    height: 600px;
+}
+
+.btn-normal-width {
+    width: 100px;
+}
+
+.goods_label_list {
+    display: flex;
+    flex-direction: column;
+    margin-left: 110px;
+    list-style: none;
+}
+
+.goods_label {
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+.goods_label_delete:hover {
+    cursor: pointer;
+}
+
+.goods_label .layui-input-inline {
+    width: 200px;
+}
+
+.layui-upload-list .file-item {
+    float: left;
+}
+
+.layui-upload-list .info {
+    position: relative;
+    margin-top: -25px;
+    background-color: black;
+    color: white;
+    filter: alpha(Opacity=80);
+    -moz-opacity: 0.5;
+    opacity: 0.5;
+    width: 100px;
+    height: 25px;
+    text-align: center;
+    display: none;
+}
+
+.layui-upload-list .handle {
+    position: relative;
+    background-color: black;
+    color: white;
+    filter: alpha(Opacity=80);
+    -moz-opacity: 0.5;
+    opacity: 0.5;
+    width: 100px;
+    text-align: right;
+    height: 30px;
+    margin-bottom: -30px;
+    display: none;
+}
+
+.layui-upload-list .file-item:hover .handle {
+    display: block;
+}
+
+.layui-upload-list .handle i {
+    display: inline-block;
+    height: 30px;
+    line-height: 30px;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.layui-upload-list .handle i:hover {
+    cursor: pointer;
+}
+
+.layui-form-select dl {
+    z-index: 100000;
+}
+
+.layui-tab-brief > .layui-tab-title .layui-this a {
+    color: #009688;
+}
